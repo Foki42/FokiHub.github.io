@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foki Hub v3.8 — Audit Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #080808;
+    --bg2:      #0e0e0e;
+    --bg3:      #141414;
+    --bg4:      #1a1a1a;
+    --bg5:      #222;
+    --border:   #1e1e1e;
+    --border2:  #2a2a2a;
+    --text:     #e8e8e8;
+    --muted:    #555;
+    --dim:      #333;
+    --accent:   #e0e0e0;
+    --sub:      #888;
+    --good:     #2a3d2a;
+    --goodt:    #7ec87e;
+    --warn:     #3a3020;
+    --warnt:    #c8a84b;
+    --bad:      #3a2020;
+    --badt:     #c87e7e;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── SCANLINES OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── PAGE ── */
+  .page { max-width: 960px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  /* ── HEADER ── */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border2);
+    margin-bottom: 40px;
+  }
+  .header-eyebrow {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .header-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .header-sub {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--sub);
+    margin-top: 8px;
+  }
+  .header-score-block { text-align: right; }
+  .header-score-num {
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+  .header-score-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .header-badge {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 3px 12px;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    color: var(--sub);
+    margin-top: 10px;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── MAIN SCORE TABLE ── */
+  .score-table-wrap { margin-bottom: 48px; }
+
+  table.score-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.score-table thead th {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0 12px 12px;
+    border-bottom: 1px solid var(--border2);
+    font-weight: 400;
+  }
+  table.score-table thead th:last-child { text-align: right; }
+  table.score-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  table.score-table tbody tr:hover { background: var(--bg2); }
+  table.score-table tbody tr.expanded { background: var(--bg2); }
+  table.score-table tbody td {
+    padding: 14px 12px;
+    vertical-align: middle;
+  }
+  .td-num {
+    font-size: 9px;
+    color: var(--muted);
+    width: 28px;
+    font-weight: 400;
+  }
+  .td-cat {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--sub);
+    text-transform: uppercase;
+    width: 120px;
+  }
+  .td-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .td-tag { width: 90px; }
+  .tag {
+    display: inline-block;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  .tag-solid { background: var(--good); color: var(--goodt); }
+  .tag-warn  { background: var(--warn); color: var(--warnt); }
+  .tag-weak  { background: var(--bad);  color: var(--badt);  }
+
+  .td-bar { width: 200px; }
+  .bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--bg5);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.9s cubic-bezier(.4,0,.2,1);
+  }
+  .td-score {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+    width: 52px;
+    white-space: nowrap;
+  }
+  .td-arrow {
+    width: 24px;
+    color: var(--muted);
+    font-size: 11px;
+    transition: transform 0.2s;
+    text-align: right;
+  }
+  tr.expanded .td-arrow { transform: rotate(90deg); }
+
+  /* DETAIL ROW */
+  tr.detail-row td {
+    padding: 0;
+    border-bottom: 1px solid var(--border2);
+  }
+  tr.detail-row .detail-inner {
+    padding: 16px 12px 20px 160px;
+    display: none;
+  }
+  tr.detail-row.open .detail-inner { display: block; }
+  .detail-inner .detail-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .detail-inner p {
+    font-size: 12px;
+    color: var(--sub);
+    line-height: 1.8;
+    max-width: 600px;
+  }
+  .detail-inner .detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .detail-tag-item {
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+    color: var(--muted);
+  }
+
+  /* TOTAL ROW */
+  tr.total-row td {
+    padding: 16px 12px;
+    border-top: 1px solid var(--border2);
+    border-bottom: none;
+  }
+  tr.total-row .total-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  tr.total-row .total-score {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+  }
+
+  /* ── FEATURES TABLE ── */
+  .features-section { margin-bottom: 48px; }
+  table.feat-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.feat-table thead th {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 12px 12px;
+    border-bottom: 1px solid var(--border2);
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+  table.feat-table tbody tr {
+    border-bottom: 1px solid var(--border);
+  }
+  table.feat-table tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+  }
+  .feat-status {
+    width: 24px;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot-on   { background: #7ec87e; }
+  .dot-warn { background: var(--sub); }
+  .feat-name-col {
+    font-size: 12px;
+    color: var(--sub);
+  }
+  .feat-cat-col {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-align: right;
+    width: 130px;
+    text-transform: uppercase;
+  }
+  .feat-note-col {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+    width: 140px;
+  }
+
+  /* ── RADAR SVG ── */
+  .radar-section {
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .radar-box {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .radar-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .radar-box:hover::before { opacity: 1; }
+  .radar-box:hover {
+    box-shadow: 0 24px 50px -10px rgba(0,0,0,0.8),
+                0 0 0 1px rgba(224,224,224,0.15) inset;
+  }
+  .radar-box svg { overflow: visible; }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .sum-card {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .sum-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .sum-card:hover::before {
+    opacity: 1;
+  }
+  .sum-card:hover {
+    box-shadow: 0 24px 50px -10px rgba(0,0,0,0.8),
+                0 0 0 1px rgba(224,224,224,0.15) inset;
+  }
+  .sum-card-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+  }
+  .sum-card-val {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    position: relative;
+    z-index: 2;
+  }
+  .sum-card-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── 3D CARD for conclusions box ── */
+  .card-3d-conclusions {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 20px 22px;
+    font-size: 12px;
+    color: var(--sub);
+    line-height: 1.9;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .card-3d-conclusions::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .card-3d-conclusions:hover::before { opacity: 1; }
+  .card-3d-conclusions:hover {
+    box-shadow: 0 24px 50px -10px rgba(0,0,0,0.8),
+                0 0 0 1px rgba(224,224,224,0.15) inset;
+  }
+  .card-3d-conclusions > * { position: relative; z-index: 2; }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-note { font-size: 10px; color: var(--muted); line-height: 1.8; }
+  .footer-ver  { font-size: 10px; color: var(--dim); letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">Script Audit Report · Roblox Lua Executor</div>
+      <div class="header-title">FOKI HUB</div>
+      <div class="header-sub">V3.8 · PATCH 5 · 7196 LINES</div>
+      <div class="header-badge">AUDIT · 11 CATEGORIES</div>
+    </div>
+    <div class="header-score-block">
+      <div class="header-score-num" id="mainScore">—</div>
+      <div class="header-score-label">ОБЩИЙ БАЛЛ / 10.0</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="section-title">Общая статистика</div>
+  <div class="summary-grid" style="margin-bottom:48px">
+    <div class="sum-card">
+      <div class="sum-card-label">Строк кода</div>
+      <div class="sum-card-val">7 196</div>
+      <div class="sum-card-sub">Lua · monolithic script</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">Функций</div>
+      <div class="sum-card-val">55+</div>
+      <div class="sum-card-sub">ESP, aim, movement, visual, misc</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">Сохранений слотов</div>
+      <div class="sum-card-val">3</div>
+      <div class="sum-card-sub">JSON · debounce 0.8s</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">Тем UI</div>
+      <div class="sum-card-val">4</div>
+      <div class="sum-card-sub">Dark · Light · Glass · Wine</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">Методов TP</div>
+      <div class="sum-card-val">4</div>
+      <div class="sum-card-sub">CFrame · Tween · AlignPos · MoveTo</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">Биндов</div>
+      <div class="sum-card-val">25+</div>
+      <div class="sum-card-sub">RegisterBind API · сериализация</div>
+    </div>
+  </div>
+
+  <!-- SCORE TABLE -->
+  <div class="score-table-wrap">
+    <div class="section-title">Оценка по категориям</div>
+    <table class="score-table" id="scoreTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Категория</th>
+          <th>Название</th>
+          <th>Статус</th>
+          <th colspan="2">Балл</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="scoreBody"></tbody>
+    </table>
+  </div>
+
+  <!-- RADAR + SUMMARY -->
+  <div class="radar-section">
+    <div>
+      <div class="section-title">Профиль</div>
+      <div class="radar-box">
+        <svg id="radar" width="260" height="240" viewBox="0 0 260 240"
+             role="img" aria-label="Радарная диаграмма оценок Foki Hub по 11 категориям"></svg>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Выводы</div>
+      <div class="card-3d-conclusions">
+        <p style="color:var(--goodt);font-size:10px;letter-spacing:2px;margin-bottom:10px">СИЛЬНЫЕ СТОРОНЫ</p>
+        <p style="margin-bottom:16px">
+          Богатейший набор функций для своего класса — более 55 возможностей. Все критичные операции защищены от ошибок.
+          Централизованная система биндов и полное сохранение всех настроек с тремя профилями. Глитч-анимация и матричный
+          дождь на загрузочном экране — редкость для скриптов такого типа. Просвет стен не ломается при быстром переключении.
+        </p>
+        <p style="color:var(--warnt);font-size:10px;letter-spacing:2px;margin-bottom:10px">СЛАБЫЕ СТОРОНЫ</p>
+        <p>
+          При большом количестве одновременно активных функций производительность может снижаться — часть из них обновляется
+          без ограничений частоты. Очистка состояния при смерти персонажа реализована не везде последовательно.
+          Некоторые активные соединения не всегда корректно отключаются при выключении функций, особенно в визуальных эффектах.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES TABLE -->
+  <div class="features-section">
+    <div class="section-title">Полный список функций</div>
+    <table class="feat-table">
+      <thead>
+        <tr>
+          <th style="width:24px"></th>
+          <th>Функция</th>
+          <th>Категория</th>
+          <th>Примечание</th>
+        </tr>
+      </thead>
+      <tbody id="featBody"></tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-note">
+      Шкала оценок: 7.0 — минимальный порог · 10.0 — максимум<br>
+      Анализ на основе исходного кода · Foki Hub v3.8 Patch 5
+    </div>
+    <div class="footer-ver">AUDIT REPORT</div>
+  </div>
+
+</div>
+
+<script>
+const cats = [
+  {
+    n:1, cat:'СТАБИЛЬНОСТЬ', name:'Стабильность & защита', score:9.3, tag:'solid', tagText:'НАДЁЖНО',
+    detail:'Все критичные операции обёрнуты защитой от ошибок — ESP, полёт, телепорт, прозрачность, фрикам, звуки. Предусмотрена защита от двойного запуска скрипта. Мобильный блок срабатывает до загрузки всего остального. Просвечивание сквозь стены корректно прерывается при быстром повторном переключении без артефактов. При выгрузке скрипта все активные соединения и объекты очищаются.',
+    tags:['защита от ошибок','двойной запуск','мобильный блок','быстрое переключение','очистка при выгрузке']
+  },
+  {
+    n:2, cat:'ФУНКЦИИ', name:'Количество функций', score:9.5, tag:'solid', tagText:'ОЧЕНЬ БОГАТО',
+    detail:'ESP (боксы, трейсеры, скелеты, хайлайт, имена, NPC, предметы, объекты), Прицел (FOV, плавность, дрожание, проверка стен, удержание цели, триггербот), Движение (полёт, ускорение, нoclip, хождение по воздуху, плавный страфе, safewalk, wallhop, fling, spinbot, свободная камера), Камера (просвет стен, яркость, шифт-лок, анти-туман, макс. зум), HUD (вотермарк, спидометр, список модулей, миникарта, радар), Визуал (nebula, погода, крылья, призрак, некоуши, шляпа, трейлы), Прочее (телепорт 4 способа, гравитация, анти-стан, расширение хитбокса, лог защиты, детект флагов).',
+    tags:['55+ функций','ESP пакет','прицел','движение','визуал','HUD системы']
+  },
+  {
+    n:3, cat:'БЕЗОПАСНОСТЬ', name:'Безопасность & обход', score:9.0, tag:'solid', tagText:'ГРАМОТНО',
+    detail:'Список разрешённых идентификаторов устройств с несколькими методами определения и логированием при отказе. Подмена возвращаемых значений скорости и прыжка для внешних проверок — скрипт не детектируется стандартными методами. Скрытие от систем обнаружения. Все создаваемые элементы интерфейса имеют случайные имена. Приоритетная система парентинга для обхода стандартных ограничений. Чувствительные строки хранятся в закодированном виде.',
+    tags:['whitelist устройств','подмена значений','скрытие от детекта','случайные имена','кодирование строк']
+  },
+  {
+    n:4, cat:'СОХРАНЕНИЕ', name:'Сохранение & профили', score:9.2, tag:'solid', tagText:'ПОЛНОЕ',
+    detail:'Полная сериализация всех настроек в JSON-формат, включая цвета, клавиши и переключатели. Папка для сохранений создаётся автоматически при первом запуске. Задержка записи предотвращает лишние обращения к диску. Три независимых профиля настроек. Визуальная тема и небула-режим тоже сохраняются. При загрузке все значения проверяются на допустимые диапазоны.',
+    tags:['JSON','3 профиля','задержка записи','цвета и клавиши','валидация при загрузке']
+  },
+  {
+    n:5, cat:'КАСТОМИЗАЦИЯ', name:'Кастомизация & темы', score:9.1, tag:'solid', tagText:'ГИБКО',
+    detail:'Четыре встроенных темы интерфейса (тёмная, светлая, стеклянная, бордовая). Визуальный подборщик цвета для ESP и для атмосферного режима. Три цветовые схемы ESP (белая, чёрная, радуга). Режим небулы изменяет освещение, атмосферу и туман в сцене под выбранный цвет. Погодные эффекты (дождь, снег, звёзды) с настройкой интенсивности. Настройка трейлов, аксессуаров и визуальных эффектов персонажа.',
+    tags:['4 темы интерфейса','подборщик цвета','радужный ESP','небула режим','погодные эффекты']
+  },
+  {
+    n:6, cat:'ОПТИМИЗАЦИЯ', name:'Оптимизация & перформанс', score:8.7, tag:'warn', tagText:'ХОРОШО',
+    detail:'ESP работает с ограничением частоты обновления до 30 кадров в секунду. Списки игроков и NPC кэшируются и обновляются только при необходимости. Просвет стен обрабатывается порциями, чтобы не вешать игру за один кадр, с общим лимитом объектов. Режим буста FPS. При большом количестве одновременно активных функций некоторые из них обновляются без ограничений и могут создавать дополнительную нагрузку.',
+    tags:['ESP 30fps лимит','кэш игроков','кэш NPC','порционная обработка','буст FPS']
+  },
+  {
+    n:7, cat:'ОБРАТНАЯ СВЯЗЬ', name:'Обратная связь & UI', score:9.4, tag:'solid', tagText:'ОТЛИЧНО',
+    detail:'Загрузочный экран с глитч-анимацией текста, матричным дождём из символов, пульсацией рамки, прогресс-баром с процентами и кнопкой пропуска. Список активных модулей обновляется в реальном времени с поддержкой радужного режима. Спидометр с цветовой индикацией скорости. Вотермарк с именем, FPS и пингом. Звуковые эффекты на кнопках. Спидометр и вотермарк перетаскиваются мышью. Эффект мерцания на элементах.',
+    tags:['глитч анимация','матричный дождь','спидометр','вотермарк','перетаскивание']
+  },
+  {
+    n:8, cat:'НАВИГАЦИЯ', name:'Навигация & UI-структура', score:9.0, tag:'solid', tagText:'УДОБНО',
+    detail:'Система вкладок с реестром всех кнопок навигации. Поиск по всем элементам интерфейса. Отдельная страница управления клавишами. Сворачивание главного окна. Перетаскивание окна. Каждый элемент интерфейса зарегистрирован в системе тем и перекрашивается автоматически при смене темы. Hover-анимации на всех кнопках. При внешнем переключении функции кнопка в UI обновляется синхронно.',
+    tags:['вкладки','поиск','страница биндов','перемещение окна','сворачивание']
+  },
+  {
+    n:9, cat:'БИНДИНГИ', name:'Биндинги & горячие клавиши', score:9.3, tag:'solid', tagText:'ПОЛНЫЙ API',
+    detail:'Централизованный реестр с поддержкой более 25 горячих клавиш. Клавиши назначены для всех основных функций: прицел, полёт, ускорение, нoclip, свободная камера, хождение по воздуху, страфе, телепорт, хитбокс, триггербот, ESP, яркость, спинбот и другие. Двойное нажатие шифта активирует шифт-лок. Незаданные клавиши корректно сохраняются и загружаются. При внешнем переключении кнопка в UI обновляется.',
+    tags:['25+ клавиш','все функции','двойной шифт','незаданные сохраняются','синхронизация UI']
+  },
+  {
+    n:10, cat:'ОБР.ОШИБОК', name:'Обработка ошибок', score:9.1, tag:'solid', tagText:'НАДЁЖНО',
+    detail:'Защита от ошибок охватывает: определение идентификатора устройства, подключение к интерфейсу, сохранение и загрузку, все ESP-объекты, очистку свободной камеры, восстановление прозрачности стен, хук логгера, все методы телепорта. При отказе в доступе выводится предупреждение с идентификатором. При загрузке настроек все значения принудительно приводятся к допустимым диапазонам. Цвета сбрасываются к белому при повреждённых данных.',
+    tags:['защита везде','лог при отказе','диапазоны значений','сброс цветов','восстановление']
+  },
+  {
+    n:11, cat:'ГИБКОСТЬ', name:'Гибкость настроек', score:9.0, tag:'solid', tagText:'ШИРОКО',
+    detail:'Телепорт: 4 метода на выбор, включая плавный и физический для дальних расстояний. Полёт: настройка скорости и инерции. Ускорение: 2 метода и слайдер. Прицел: 2 метода, 2 режима выбора цели, настройка части тела, радиус, плавность, дрожание, проверка стен, командная проверка, прицел по NPC. Хождение по воздуху с регулировкой высоты стрелками. Плавный страфе с отдельными параметрами ускорения на земле и в воздухе.',
+    tags:['4 метода TP','инерция полёта','2 метода прицела','регулировка высоты','параметры страфе']
+  },
+];
+
+const feats = [
+  {on:true, name:'Подсветка игроков: боксы, трейсеры, скелет, хайлайт, имена, дистанция', cat:'ESP', note:''},
+  {on:true, name:'Подсветка NPC', cat:'ESP', note:'с кэшированием'},
+  {on:true, name:'Подсветка предметов на карте', cat:'ESP', note:'дистанция настр.'},
+  {on:true, name:'Подсветка объектов окружения', cat:'ESP', note:''},
+  {on:true, name:'Визуальный круг радиуса прицела', cat:'ПРИЦЕЛ', note:''},
+  {on:true, name:'Автоприцел: два режима работы', cat:'ПРИЦЕЛ', note:'2 метода'},
+  {on:true, name:'Проверка стен, команды, прицел по NPC', cat:'ПРИЦЕЛ', note:''},
+  {on:true, name:'Удержание цели', cat:'ПРИЦЕЛ', note:''},
+  {on:true, name:'Дрожание прицела', cat:'ПРИЦЕЛ', note:'сила + скорость'},
+  {on:true, name:'Автострельба при наведении на цель', cat:'ПРИЦЕЛ', note:'задержка + радиус'},
+  {on:true, name:'Полёт с инерцией', cat:'ДВИЖЕНИЕ', note:'скорость настр.'},
+  {on:true, name:'Ускорение: два метода', cat:'ДВИЖЕНИЕ', note:'слайдер'},
+  {on:true, name:'Прохождение сквозь стены', cat:'ДВИЖЕНИЕ', note:''},
+  {on:true, name:'Хождение по воздуху с регулировкой высоты', cat:'ДВИЖЕНИЕ', note:''},
+  {on:true, name:'Свободная камера', cat:'ДВИЖЕНИЕ', note:'WASD + скорость'},
+  {on:true, name:'Плавный страфе с физикой земли и воздуха', cat:'ДВИЖЕНИЕ', note:''},
+  {on:true, name:'Безопасная ходьба', cat:'ДВИЖЕНИЕ', note:''},
+  {on:true, name:'Прыжок от стены', cat:'ДВИЖЕНИЕ', note:''},
+  {on:true, name:'Отбрасывание игроков', cat:'ДВИЖЕНИЕ', note:'сила настр.'},
+  {on:true, name:'Вращение персонажа', cat:'ДВИЖЕНИЕ', note:'скорость настр.'},
+  {on:true, name:'Страфе вокруг цели', cat:'ДВИЖЕНИЕ', note:'дист. + скорость'},
+  {on:true, name:'Телепорт по клику: четыре метода', cat:'ТЕЛЕПОРТ', note:'4 метода'},
+  {on:true, name:'Просвет сквозь стены с плавным переходом', cat:'КАМЕРА', note:''},
+  {on:true, name:'Максимальная яркость', cat:'КАМЕРА', note:''},
+  {on:true, name:'Отключение тумана и атмосферы', cat:'КАМЕРА', note:'восстановление'},
+  {on:true, name:'Фиксация взгляда по направлению камеры', cat:'КАМЕРА', note:'двойной шифт'},
+  {on:true, name:'Увеличенный отдалённый зум камеры', cat:'КАМЕРА', note:'слайдер'},
+  {on:true, name:'Увеличенный хитбокс головы', cat:'БОЙ', note:'размер + прозрач.'},
+  {on:true, name:'Защита от оглушения', cat:'БОЙ', note:''},
+  {on:true, name:'Управление гравитацией', cat:'ПРОЧЕЕ', note:'слайдер'},
+  {on:true, name:'Управление высотой прыжка', cat:'ПРОЧЕЕ', note:''},
+  {on:true, name:'Логгер защитных проверок', cat:'ПРОЧЕЕ', note:''},
+  {on:true, name:'Определение флагов подозрений', cat:'ПРОЧЕЕ', note:''},
+  {on:true, name:'Копирование данных сессии', cat:'ПРОЧЕЕ', note:''},
+  {on:true, name:'Атмосферный режим с изменением освещения', cat:'ВИЗУАЛ', note:'подборщик цвета'},
+  {on:true, name:'4 темы интерфейса: тёмная, светлая, стеклянная, бордовая', cat:'ВИЗУАЛ', note:''},
+  {on:true, name:'Погода: дождь, снег, звёзды', cat:'ВИЗУАЛ', note:'интенсивность'},
+  {on:true, name:'Трейл за персонажем', cat:'ВИЗУАЛ', note:'цвет + длина'},
+  {on:true, name:'Трейл на полу', cat:'ВИЗУАЛ', note:''},
+  {on:true, name:'Круг при прыжке', cat:'ВИЗУАЛ', note:''},
+  {on:true, name:'Крылья персонажа', cat:'ВИЗУАЛ', note:''},
+  {on:true, name:'Режим призрака', cat:'ВИЗУАЛ', note:''},
+  {on:true, name:'Ушки и шляпа персонажа', cat:'ВИЗУАЛ', note:'размер + высота'},
+  {on:true, name:'Вотермарк с именем, FPS и пингом', cat:'HUD', note:'перетаскивание'},
+  {on:true, name:'Спидометр с цветовой индикацией', cat:'HUD', note:'перетаскивание'},
+  {on:true, name:'Список активных модулей в реальном времени', cat:'HUD', note:'радужный режим'},
+  {on:true, name:'Миникарта', cat:'HUD', note:'размер + дальность'},
+  {on:true, name:'Мини-радар', cat:'HUD', note:''},
+  {on:true, name:'3 профильных слота с автосохранением', cat:'СОХРАНЕНИЕ', note:'задержка записи'},
+  {on:true, name:'Вайтлист устройств и блок мобильных', cat:'БЕЗОПАСНОСТЬ', note:'3 метода проверки'},
+  {on:false, name:'Очистка при смерти персонажа реализована не везде', cat:'СЛАБОСТЬ', note:'частично'},
+  {on:false, name:'При множестве активных функций возможна лишняя нагрузка', cat:'СЛАБОСТЬ', note:''},
+];
+
+function pct(s){ return Math.max(0, Math.min(100, ((s-7)/3)*100)); }
+
+// Build score table
+const tbody = document.getElementById('scoreBody');
+cats.forEach((c,i) => {
+  const barWidth = pct(c.score);
+  const tagClass = c.tag==='solid'?'tag-solid': c.tag==='warn'?'tag-warn':'tag-weak';
+  const mainRow = document.createElement('tr');
+  mainRow.id = 'row-'+i;
+  mainRow.innerHTML = `
+    <td class="td-num">${String(c.n).padStart(2,'0')}</td>
+    <td class="td-cat">${c.cat}</td>
+    <td class="td-name">${c.name}</td>
+    <td class="td-tag"><span class="tag ${tagClass}">${c.tagText}</span></td>
+    <td class="td-bar">
+      <div class="bar-wrap">
+        <div class="bar-bg"><div class="bar-fill" data-pct="${barWidth}"></div></div>
+      </div>
+    </td>
+    <td class="td-score">${c.score.toFixed(1)}</td>
+    <td class="td-arrow">▶</td>`;
+
+  const detailRow = document.createElement('tr');
+  detailRow.className = 'detail-row';
+  detailRow.id = 'detail-'+i;
+  const tagsHtml = c.tags.map(t=>`<span class="detail-tag-item">${t}</span>`).join('');
+  detailRow.innerHTML = `<td colspan="7"><div class="detail-inner">
+    <div class="detail-label">Детали</div>
+    <p>${c.detail}</p>
+    <div class="detail-tags">${tagsHtml}</div>
+  </div></td>`;
+
+  mainRow.addEventListener('click', () => {
+    const isExp = mainRow.classList.contains('expanded');
+    document.querySelectorAll('tr.detail-row').forEach(r => r.classList.remove('open'));
+    document.querySelectorAll('tr[id^="row-"]').forEach(r => r.classList.remove('expanded'));
+    if(!isExp){
+      mainRow.classList.add('expanded');
+      detailRow.classList.add('open');
+    }
+  });
+
+  tbody.appendChild(mainRow);
+  tbody.appendChild(detailRow);
+});
+
+// Total row
+const avg = cats.reduce((s,c)=>s+c.score,0)/cats.length;
+const totalRow = document.createElement('tr');
+totalRow.className = 'total-row';
+totalRow.innerHTML = `
+  <td colspan="5"><span class="total-label">Итого</span></td>
+  <td colspan="2" class="total-score">${avg.toFixed(2)}</td>`;
+tbody.appendChild(totalRow);
+
+document.getElementById('mainScore').textContent = avg.toFixed(2);
+
+// Animate bars
+setTimeout(() => {
+  document.querySelectorAll('.bar-fill').forEach(b => {
+    b.style.width = b.dataset.pct + '%';
+  });
+}, 200);
+
+// Build features table
+const featBody = document.getElementById('featBody');
+feats.forEach(f => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="feat-status"><span class="dot ${f.on?'dot-on':'dot-warn'}"></span></td>
+    <td class="feat-name-col">${f.name}</td>
+    <td class="feat-cat-col">${f.cat}</td>
+    <td class="feat-note-col">${f.note}</td>`;
+  featBody.appendChild(tr);
+});
+
+// Radar
+const svg = document.getElementById('radar');
+const cx=130, cy=120, R=90, N=cats.length;
+const angles = cats.map((_,i) => (-Math.PI/2)+(2*Math.PI*i/N));
+
+function pt(score, i){
+  const r = pct(score)/100*R;
+  return [cx+r*Math.cos(angles[i]), cy+r*Math.sin(angles[i])];
+}
+
+const gridCol='rgba(255,255,255,0.05)';
+const labelCol='#444';
+const polyFill='rgba(220,220,220,0.08)';
+const polyStroke='rgba(220,220,220,0.4)';
+const dotCol='#e0e0e0';
+
+for(let ring=1;ring<=4;ring++){
+  const rr=ring/4*R;
+  const pts=angles.map(a=>`${cx+rr*Math.cos(a)},${cy+rr*Math.sin(a)}`).join(' ');
+  const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  poly.setAttribute('points',pts);
+  poly.setAttribute('fill','none');
+  poly.setAttribute('stroke',gridCol);
+  poly.setAttribute('stroke-width','1');
+  svg.appendChild(poly);
+}
+
+angles.forEach((a,i)=>{
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1',cx); line.setAttribute('y1',cy);
+  line.setAttribute('x2',cx+R*Math.cos(a)); line.setAttribute('y2',cy+R*Math.sin(a));
+  line.setAttribute('stroke',gridCol); line.setAttribute('stroke-width','1');
+  svg.appendChild(line);
+
+  const lx=cx+(R+16)*Math.cos(a);
+  const ly=cy+(R+16)*Math.sin(a);
+  const text=document.createElementNS('http://www.w3.org/2000/svg','text');
+  text.setAttribute('x',lx); text.setAttribute('y',ly+3);
+  text.setAttribute('text-anchor','middle');
+  text.setAttribute('font-size','8');
+  text.setAttribute('fill',labelCol);
+  text.setAttribute('font-family',"'JetBrains Mono','Courier New',monospace");
+  text.setAttribute('letter-spacing','1');
+  text.textContent=cats[i].cat.substring(0,5);
+  svg.appendChild(text);
+});
+
+const pts=cats.map((c,i)=>pt(c.score,i).join(',')).join(' ');
+const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+poly.setAttribute('points',pts);
+poly.setAttribute('fill',polyFill);
+poly.setAttribute('stroke',polyStroke);
+poly.setAttribute('stroke-width','1.5');
+svg.appendChild(poly);
+
+cats.forEach((c,i)=>{
+  const [x,y]=pt(c.score,i);
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('cx',x); dot.setAttribute('cy',y); dot.setAttribute('r','3');
+  dot.setAttribute('fill',dotCol);
+  svg.appendChild(dot);
+});
+
+// === 3D TILT EFFECT ===
+function add3DTilt(selector) {
+  document.querySelectorAll(selector).forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const rotX = (cy - y) / 16;
+      const rotY = (cx - x) / 16;
+      card.style.transition = 'transform 0.08s ease-out, box-shadow 0.08s ease-out';
+      card.style.transform = `perspective(1000px) rotateX(${-rotX}deg) rotateY(${rotY}deg) translateZ(10px)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = 'transform 0.5s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s cubic-bezier(0.23,1,0.32,1)';
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+    });
+  });
+}
+
+add3DTilt('.sum-card');
+add3DTilt('.card-3d-conclusions');
+add3DTilt('.radar-box');
+</script>
+</body>
+</html>
