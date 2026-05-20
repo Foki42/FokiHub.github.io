@@ -479,7 +479,7 @@
 <body>
 <div class="page">
 
-  <!-- HEADER -->
+  
   <div class="header">
     <div>
       <div class="header-eyebrow">Script Audit Report · Roblox Lua Executor</div>
@@ -493,7 +493,7 @@
     </div>
   </div>
 
-  <!-- SUMMARY CARDS -->
+  
   <div class="section-title">Общая статистика</div>
   <div class="summary-grid" style="margin-bottom:48px">
     <div class="sum-card">
@@ -528,7 +528,7 @@
     </div>
   </div>
 
-  <!-- SCORE TABLE -->
+  
   <div class="score-table-wrap">
     <div class="section-title">Оценка по категориям</div>
     <table class="score-table" id="scoreTable">
@@ -546,7 +546,7 @@
     </table>
   </div>
 
-  <!-- RADAR + SUMMARY -->
+  
   <div class="radar-section">
     <div>
       <div class="section-title">Профиль</div>
@@ -574,7 +574,7 @@
     </div>
   </div>
 
-  <!-- FEATURES TABLE -->
+  
   <div class="features-section">
     <div class="section-title">Полный список функций</div>
     <table class="feat-table">
@@ -590,7 +590,7 @@
     </table>
   </div>
 
-  <!-- FOOTER -->
+  
   <div class="footer">
     <div class="footer-note">
       Шкала оценок: 7.0 — минимальный порог · 10.0 — максимум<br>
@@ -661,63 +661,62 @@ const cats = [
 ];
 
 const feats = [
-  {on:true, name:'Подсветка игроков: боксы, трейсеры, скелет, хайлайт, имена, дистанция', cat:'ESP', note:''},
-  {on:true, name:'Подсветка NPC', cat:'ESP', note:'с кэшированием'},
-  {on:true, name:'Подсветка предметов на карте', cat:'ESP', note:'дистанция настр.'},
-  {on:true, name:'Подсветка объектов окружения', cat:'ESP', note:''},
-  {on:true, name:'Визуальный круг радиуса прицела', cat:'ПРИЦЕЛ', note:''},
-  {on:true, name:'Автоприцел: два режима работы', cat:'ПРИЦЕЛ', note:'2 метода'},
-  {on:true, name:'Проверка стен, команды, прицел по NPC', cat:'ПРИЦЕЛ', note:''},
-  {on:true, name:'Удержание цели', cat:'ПРИЦЕЛ', note:''},
-  {on:true, name:'Дрожание прицела', cat:'ПРИЦЕЛ', note:'сила + скорость'},
-  {on:true, name:'Автострельба при наведении на цель', cat:'ПРИЦЕЛ', note:'задержка + радиус'},
-  {on:true, name:'Полёт с инерцией', cat:'ДВИЖЕНИЕ', note:'скорость настр.'},
-  {on:true, name:'Ускорение: два метода', cat:'ДВИЖЕНИЕ', note:'слайдер'},
-  {on:true, name:'Прохождение сквозь стены', cat:'ДВИЖЕНИЕ', note:''},
-  {on:true, name:'Хождение по воздуху с регулировкой высоты', cat:'ДВИЖЕНИЕ', note:''},
-  {on:true, name:'Свободная камера', cat:'ДВИЖЕНИЕ', note:'WASD + скорость'},
-  {on:true, name:'Плавный страфе с физикой земли и воздуха', cat:'ДВИЖЕНИЕ', note:''},
-  {on:true, name:'Безопасная ходьба', cat:'ДВИЖЕНИЕ', note:''},
-  {on:true, name:'Прыжок от стены', cat:'ДВИЖЕНИЕ', note:''},
-  {on:true, name:'Отбрасывание игроков', cat:'ДВИЖЕНИЕ', note:'сила настр.'},
-  {on:true, name:'Вращение персонажа', cat:'ДВИЖЕНИЕ', note:'скорость настр.'},
-  {on:true, name:'Страфе вокруг цели', cat:'ДВИЖЕНИЕ', note:'дист. + скорость'},
-  {on:true, name:'Телепорт по клику: четыре метода', cat:'ТЕЛЕПОРТ', note:'4 метода'},
-  {on:true, name:'Просвет сквозь стены с плавным переходом', cat:'КАМЕРА', note:''},
-  {on:true, name:'Максимальная яркость', cat:'КАМЕРА', note:''},
-  {on:true, name:'Отключение тумана и атмосферы', cat:'КАМЕРА', note:'восстановление'},
-  {on:true, name:'Фиксация взгляда по направлению камеры', cat:'КАМЕРА', note:'двойной шифт'},
-  {on:true, name:'Увеличенный отдалённый зум камеры', cat:'КАМЕРА', note:'слайдер'},
-  {on:true, name:'Увеличенный хитбокс головы', cat:'БОЙ', note:'размер + прозрач.'},
-  {on:true, name:'Защита от оглушения', cat:'БОЙ', note:''},
-  {on:true, name:'Управление гравитацией', cat:'ПРОЧЕЕ', note:'слайдер'},
-  {on:true, name:'Управление высотой прыжка', cat:'ПРОЧЕЕ', note:''},
-  {on:true, name:'Логгер защитных проверок', cat:'ПРОЧЕЕ', note:''},
-  {on:true, name:'Определение флагов подозрений', cat:'ПРОЧЕЕ', note:''},
-  {on:true, name:'Копирование данных сессии', cat:'ПРОЧЕЕ', note:''},
-  {on:true, name:'Атмосферный режим с изменением освещения', cat:'ВИЗУАЛ', note:'подборщик цвета'},
-  {on:true, name:'4 темы интерфейса: тёмная, светлая, стеклянная, бордовая', cat:'ВИЗУАЛ', note:''},
-  {on:true, name:'Погода: дождь, снег, звёзды', cat:'ВИЗУАЛ', note:'интенсивность'},
-  {on:true, name:'Трейл за персонажем', cat:'ВИЗУАЛ', note:'цвет + длина'},
-  {on:true, name:'Трейл на полу', cat:'ВИЗУАЛ', note:''},
-  {on:true, name:'Круг при прыжке', cat:'ВИЗУАЛ', note:''},
-  {on:true, name:'Крылья персонажа', cat:'ВИЗУАЛ', note:''},
-  {on:true, name:'Режим призрака', cat:'ВИЗУАЛ', note:''},
-  {on:true, name:'Ушки и шляпа персонажа', cat:'ВИЗУАЛ', note:'размер + высота'},
-  {on:true, name:'Вотермарк с именем, FPS и пингом', cat:'HUD', note:'перетаскивание'},
-  {on:true, name:'Спидометр с цветовой индикацией', cat:'HUD', note:'перетаскивание'},
-  {on:true, name:'Список активных модулей в реальном времени', cat:'HUD', note:'радужный режим'},
-  {on:true, name:'Миникарта', cat:'HUD', note:'размер + дальность'},
-  {on:true, name:'Мини-радар', cat:'HUD', note:''},
-  {on:true, name:'3 профильных слота с автосохранением', cat:'СОХРАНЕНИЕ', note:'задержка записи'},
-  {on:true, name:'Вайтлист устройств и блок мобильных', cat:'БЕЗОПАСНОСТЬ', note:'3 метода проверки'},
-  {on:false, name:'Очистка при смерти персонажа реализована не везде', cat:'СЛАБОСТЬ', note:'частично'},
-  {on:false, name:'При множестве активных функций возможна лишняя нагрузка', cat:'СЛАБОСТЬ', note:''},
+  {on:true, name:'ESP: Boxes, Tracers, Skeleton, Highlight, Names, Distance', cat:'ESP', note:''},
+  {on:true, name:'NPC ESP', cat:'ESP', note:'with caching'},
+  {on:true, name:'Plate ESP (items on map)', cat:'ESP', note:'adjustable distance'},
+  {on:true, name:'Environment Object ESP', cat:'ESP', note:''},
+  {on:true, name:'FOV Circle', cat:'AIMBOT', note:''},
+  {on:true, name:'Aimbot: FOV (Cursor) & Closest modes', cat:'AIMBOT', note:'2 methods'},
+  {on:true, name:'Wall Check, Team Check, NPC Aim', cat:'AIMBOT', note:''},
+  {on:true, name:'Aim Lock (no slip)', cat:'AIMBOT', note:''},
+  {on:true, name:'Jitter (Humanize)', cat:'AIMBOT', note:'strength + speed'},
+  {on:true, name:'TriggerBot', cat:'AIMBOT', note:'delay + FOV'},
+  {on:true, name:'Fly (with inertia)', cat:'MOVEMENT', note:'adjustable speed'},
+  {on:true, name:'Speed: BodyVelocity & CFrame Offset', cat:'MOVEMENT', note:'slider'},
+  {on:true, name:'NoClip', cat:'MOVEMENT', note:''},
+  {on:true, name:'AirWalk (adjustable air level)', cat:'MOVEMENT', note:''},
+  {on:true, name:'FreeCam', cat:'MOVEMENT', note:'WASD + speed'},
+  {on:true, name:'Smooth Strafe (ground & air physics)', cat:'MOVEMENT', note:''},
+  {on:true, name:'AutoJump', cat:'MOVEMENT', note:''},
+  {on:true, name:'WallHop', cat:'MOVEMENT', note:''},
+  {on:true, name:'Fling', cat:'MOVEMENT', note:'adjustable power'},
+  {on:true, name:'Spinbot', cat:'MOVEMENT', note:'adjustable speed'},
+  {on:true, name:'Target Strafe', cat:'MOVEMENT', note:'distance + speed'},
+  {on:true, name:'Click TP: CFrame · Tween · AlignPos · MoveTo', cat:'TELEPORT', note:'4 methods'},
+  {on:true, name:'XRay (see through walls)', cat:'CAMERA', note:'smooth transition'},
+  {on:true, name:'Fullbright', cat:'CAMERA', note:''},
+  {on:true, name:'Anti Fog', cat:'CAMERA', note:'restores on disable'},
+  {on:true, name:'ShiftLock (camera-direction lock)', cat:'CAMERA', note:'double shift'},
+  {on:true, name:'Extended Camera Zoom', cat:'CAMERA', note:'slider'},
+  {on:true, name:'Head Hitbox Expander', cat:'COMBAT', note:'size + transparency'},
+  {on:true, name:'Anti Stun', cat:'COMBAT', note:''},
+  {on:true, name:'Gravity Control', cat:'MISC', note:'slider'},
+  {on:true, name:'Jump Power Control', cat:'MISC', note:''},
+  {on:true, name:'Bypass / AC Check Logger', cat:'MISC', note:''},
+  {on:true, name:'Suspicion Flag Detector', cat:'MISC', note:''},
+  {on:true, name:'Session Data Clipboard Copy', cat:'MISC', note:''},
+  {on:true, name:'Atmosphere Mode (sky color)', cat:'VISUAL', note:'color picker'},
+  {on:true, name:'4 UI Themes: Dark · Light · Glass · Wine', cat:'VISUAL', note:''},
+  {on:true, name:'Weather: Rain, Snow, Stars', cat:'VISUAL', note:'intensity slider'},
+  {on:true, name:'Player Trail', cat:'VISUAL', note:'color + lifetime'},
+  {on:true, name:'Floor Trail', cat:'VISUAL', note:''},
+  {on:true, name:'Jump Circle', cat:'VISUAL', note:''},
+  {on:true, name:'Wings', cat:'VISUAL', note:''},
+  {on:true, name:'Ghost Mode (Neko)', cat:'VISUAL', note:''},
+  {on:true, name:'China Hat + Neko Ears', cat:'VISUAL', note:'size + height'},
+  {on:true, name:'Watermark (name, FPS, ping)', cat:'HUD', note:'draggable'},
+  {on:true, name:'Speedometer', cat:'HUD', note:'draggable'},
+  {on:true, name:'ArrayList (active modules)', cat:'HUD', note:'rainbow mode'},
+  {on:true, name:'Minimap', cat:'HUD', note:'size + range'},
+  {on:true, name:'Mini Radar', cat:'HUD', note:''},
+  {on:true, name:'3 Config Slots (auto-save)', cat:'SAVE', note:'0.8s debounce'},
+  {on:true, name:'Device Whitelist + Mobile Block', cat:'SECURITY', note:'3 check methods'},
+  {on:false, name:'Cleanup on character death not fully implemented', cat:'WEAKNESS', note:'partial'},
+  {on:false, name:'Performance may degrade with many features active simultaneously', cat:'WEAKNESS', note:''},
 ];
 
 function pct(s){ return Math.max(0, Math.min(100, ((s-7)/3)*100)); }
 
-// Build score table
 const tbody = document.getElementById('scoreBody');
 cats.forEach((c,i) => {
   const barWidth = pct(c.score);
@@ -761,7 +760,6 @@ cats.forEach((c,i) => {
   tbody.appendChild(detailRow);
 });
 
-// Total row
 const avg = cats.reduce((s,c)=>s+c.score,0)/cats.length;
 const totalRow = document.createElement('tr');
 totalRow.className = 'total-row';
@@ -772,14 +770,12 @@ tbody.appendChild(totalRow);
 
 document.getElementById('mainScore').textContent = avg.toFixed(2);
 
-// Animate bars
 setTimeout(() => {
   document.querySelectorAll('.bar-fill').forEach(b => {
     b.style.width = b.dataset.pct + '%';
   });
 }, 200);
 
-// Build features table
 const featBody = document.getElementById('featBody');
 feats.forEach(f => {
   const tr = document.createElement('tr');
@@ -791,7 +787,6 @@ feats.forEach(f => {
   featBody.appendChild(tr);
 });
 
-// Radar
 const svg = document.getElementById('radar');
 const cx=130, cy=120, R=90, N=cats.length;
 const angles = cats.map((_,i) => (-Math.PI/2)+(2*Math.PI*i/N));
@@ -854,7 +849,6 @@ cats.forEach((c,i)=>{
   svg.appendChild(dot);
 });
 
-// === 3D TILT EFFECT ===
 function add3DTilt(selector) {
   document.querySelectorAll(selector).forEach(card => {
     card.addEventListener('mousemove', (e) => {
